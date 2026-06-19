@@ -1,345 +1,113 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>墨香阁 · 手机扫码下载</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<style>
-  :root {
-    --ink: #1a1a2e;
-    --paper: #faf7f2;
-    --accent: #6366f1;
-    --accent-2: #ec4899;
-    --muted: #8b8ba7;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Space Grotesk', 'Noto Serif SC', sans-serif;
-    min-height: 100vh;
-    background:
-      radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-      radial-gradient(at 80% 80%, rgba(236, 72, 153, 0.12) 0px, transparent 50%),
-      radial-gradient(at 50% 50%, rgba(250, 247, 242, 1) 0px, #f5f0e8 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    color: var(--ink);
-  }
-
-  .card {
-    background: #ffffff;
-    border-radius: 32px;
-    padding: 48px 40px;
-    max-width: 520px;
-    width: 100%;
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.04),
-      0 8px 32px rgba(99, 102, 241, 0.08),
-      0 24px 80px rgba(0, 0, 0, 0.06);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  }
-
-  .logo {
-    font-family: 'Noto Serif SC', serif;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.4em;
-    color: var(--muted);
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  h1 {
-    font-family: 'Noto Serif SC', serif;
-    font-weight: 700;
-    font-size: 32px;
-    text-align: center;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 36px;
-    letter-spacing: 0.02em;
-  }
-
-  .qr-wrapper {
-    background: linear-gradient(135deg, #f8f7ff 0%, #fff7fb 100%);
-    border-radius: 24px;
-    padding: 32px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 28px;
-    position: relative;
-    border: 1px solid rgba(99, 102, 241, 0.1);
-  }
-
-  #qrcode {
-    display: flex;
-    justify-content: center;
-  }
-
-  #qrcode img, #qrcode canvas {
-    border-radius: 12px;
-  }
-
-  .qr-tag {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: white;
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 999px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
-  }
-
-  .info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .info-item {
-    background: #fafafd;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(0, 0, 0, 0.04);
-  }
-
-  .info-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-    font-weight: 500;
-  }
-
-  .info-value {
-    font-family: 'Space Grotesk', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-    word-break: break-all;
-  }
-
-  .download-btn {
-    display: block;
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-    color: white;
-    text-decoration: none;
-    padding: 18px;
-    border-radius: 16px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.02em;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
-    margin-bottom: 16px;
-  }
-
-  .download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
-  }
-
-  .copy-btn {
-    display: block;
-    width: 100%;
-    background: white;
-    color: var(--ink);
-    border: 1.5px solid #e5e5ea;
-    padding: 14px;
-    border-radius: 16px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s ease;
-  }
-
-  .copy-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .copy-btn.copied {
-    background: #ecfdf5;
-    border-color: #10b981;
-    color: #10b981;
-  }
-
-  .steps {
-    margin-top: 28px;
-    padding-top: 28px;
-    border-top: 1px dashed #e5e5ea;
-  }
-
-  .steps h3 {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 12px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .step-list {
-    list-style: none;
-    counter-reset: step;
-  }
-
-  .step-list li {
-    counter-increment: step;
-    padding: 10px 0 10px 36px;
-    position: relative;
-    font-size: 13px;
-    color: var(--ink);
-    line-height: 1.6;
-  }
-
-  .step-list li::before {
-    content: counter(step);
-    position: absolute;
-    left: 0;
-    top: 9px;
-    width: 22px;
-    height: 22px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: white;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  @media (max-width: 520px) {
-    .card {
-      padding: 32px 24px;
-      border-radius: 24px;
-    }
-    h1 { font-size: 24px; }
-    .info { grid-template-columns: 1fr; }
-  }
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨香阁 · 笔墨留香之地</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="card">
-    <div class="logo">MOXIANGGE · 墨香阁</div>
-    <h1>扫码下载应用</h1>
-    <p class="subtitle">Android APK · 版本 1.0</p>
+<div class="container">
+    <header class="site-header">
+        <div class="title-block">
+            <h1 class="site-title">墨香阁</h1>
+            <p class="site-subtitle">笔墨留香 · 文人汇聚</p>
+        </div>
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn active">文章阁</a>
+            <a href="write.html" class="nav-btn">提笔写作</a>
+        </nav>
+    </header>
 
-    <div class="qr-wrapper">
-      <span class="qr-tag">SCAN ME</span>
-      <div id="qrcode"></div>
-    </div>
+    <main class="content">
+        <div class="intro-card">
+            <h2>欢迎来到墨香阁</h2>
+            <p>这里是一方笔墨留香之地。在这里，你可以挥毫泼墨，写下心中的故事；也可以漫步书海，品读他人的笔墨精华。</p>
+            <p class="intro-tip">文章按时间排序，最新更新在最上方。</p>
+        </div>
 
-    <div class="info">
-      <div class="info-item">
-        <div class="info-label">文件大小</div>
-        <div class="info-value" id="size">—</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">下载链接</div>
-        <div class="info-value" id="url-text">—</div>
-      </div>
-    </div>
+        <div class="articles-section">
+            <h2 class="section-title">📖 文章阁</h2>
+            <div id="articles-list" class="articles-list">
+                <div class="loading">正在加载文章...</div>
+            </div>
+        </div>
+    </main>
 
-    <a class="download-btn" id="download-link" href="#">下载 APK</a>
-    <button class="copy-btn" id="copy-btn">复制下载链接</button>
-
-    <div class="steps">
-      <h3>手机安装步骤</h3>
-      <ol class="step-list">
-        <li>用手机相机或二维码工具扫描上方二维码</li>
-        <li>在浏览器中打开并下载 APK 文件</li>
-        <li>下载完成后点击文件进行安装</li>
-        <li>如提示"未知来源"，请在设置中允许安装</li>
-      </ol>
-    </div>
-  </div>
+    <footer class="site-footer">
+        <p>墨香阁 · 墨香四溢 · 笔下生花</p>
+        <p class="copyright">v1.1 · GitHub Pages</p>
+    </footer>
+</div>
 
 <script>
-  const IP = '10.72.216.205';
-  const PORT = '8000';
-  const fileName = 'moxiangge.apk';
-  const downloadURL = `http://${IP}:${PORT}/${fileName}`;
+const GITHUB_USER = '199932';
+const GITHUB_REPO = 'moxiangge';
+const BASE_URL = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}`;
+const ARTICLES_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/articles.json`;
+// 备用：直接从 Pages 网址加载
+const FALLBACK_URL = `${BASE_URL}/articles.json`;
 
-  // 生成二维码
-  new QRCode(document.getElementById('qrcode'), {
-    text: downloadURL,
-    width: 240,
-    height: 240,
-    colorDark: '#1a1a2e',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
+function formatDate(ts) {
+    const d = new Date(ts);
+    return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+}
 
-  // 获取文件大小
-  fetch(downloadURL, { method: 'HEAD' })
-    .then(r => {
-      const size = r.headers.get('Content-Length');
-      if (size) {
-        const mb = (parseInt(size) / (1024 * 1024)).toFixed(2);
-        document.getElementById('size').textContent = `${mb} MB`;
-      }
-    })
-    .catch(() => {
-      document.getElementById('size').textContent = '约 3.4 MB';
-    });
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+}
 
-  // 设置链接
-  document.getElementById('download-link').href = downloadURL;
-  document.getElementById('url-text').textContent = `${IP}:${PORT}`;
-
-  // 复制按钮
-  const copyBtn = document.getElementById('copy-btn');
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(downloadURL);
-      copyBtn.textContent = '✓ 已复制到剪贴板';
-      copyBtn.classList.add('copied');
-      setTimeout(() => {
-        copyBtn.textContent = '复制下载链接';
-        copyBtn.classList.remove('copied');
-      }, 2000);
-    } catch (e) {
-      copyBtn.textContent = '复制失败，请手动复制';
+function renderArticles(articles) {
+    const list = document.getElementById('articles-list');
+    if (!articles || articles.length === 0) {
+        list.innerHTML = '<div class="empty">暂无文章，点击「提笔写作」发布第一篇吧！</div>';
+        return;
     }
-  });
+    // 按时间倒序
+    articles.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+    list.innerHTML = articles.map(a => `
+        <a class="article-card" href="read.html?id=${encodeURIComponent(a.id)}">
+            <div class="article-header">
+                <h3 class="article-title">${escapeHtml(a.title)}</h3>
+                <span class="article-category">${escapeHtml(a.category || '随笔')}</span>
+            </div>
+            <p class="article-preview">${escapeHtml((a.content || '').substring(0, 120))}${(a.content||'').length > 120 ? '...' : ''}</p>
+            <div class="article-meta">
+                <span>✍️ ${escapeHtml(a.author || '匿名')}</span>
+                <span>📅 ${formatDate(a.createdAt || Date.now())}</span>
+                <span>👁️ ${a.views || 0} 阅读</span>
+            </div>
+        </a>
+    `).join('');
+}
+
+function loadArticles() {
+    const list = document.getElementById('articles-list');
+    list.innerHTML = '<div class="loading">正在加载文章...</div>';
+    
+    // 先尝试从 raw.githubusercontent 加载，失败则从 Pages URL 尝试
+    fetch(ARTICLES_URL, { cache: 'no-store' })
+        .then(r => {
+            if (!r.ok) throw new Error('加载失败');
+            return r.json();
+        })
+        .then(data => {
+            renderArticles(data.articles || data);
+        })
+        .catch(() => {
+            // 备用：从 Pages URL 加载
+            fetch(FALLBACK_URL + '?t=' + Date.now())
+                .then(r => r.ok ? r.json() : Promise.reject('失败'))
+                .then(data => renderArticles(data.articles || data))
+                .catch(() => {
+                    list.innerHTML = '<div class="empty">文章加载失败，请稍后刷新重试。</div>';
+                });
+        });
+}
+
+loadArticles();
 </script>
 </body>
 </html>

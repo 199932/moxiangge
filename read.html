@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章阅读 · 墨香阁</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header class="site-header">
+        <div class="title-block">
+            <h1 class="site-title">墨香阁</h1>
+            <p class="site-subtitle">笔墨留香 · 文人汇聚</p>
+        </div>
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">文章阁</a>
+            <a href="write.html" class="nav-btn">提笔写作</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div id="article-view">
+            <a href="index.html" class="back-link">← 返回文章阁</a>
+            <div id="article-content">
+                <div class="loading">文章加载中...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>墨香阁 · 墨香四溢 · 笔下生花</p>
+        <p class="copyright">v1.1 · GitHub Pages</p>
+    </footer>
+</div>
+
+<script>
+const GITHUB_USER = '199932';
+const GITHUB_REPO = 'moxiangge';
+const ARTICLES_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/articles.json`;
+const FALLBACK_URL = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/articles.json`;
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+}
+
+function formatDate(ts) {
+    const d = new Date(ts);
+    return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 '
+        + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function getParam(name) {
+    const m = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function loadArticle() {
+    const id = getParam('id');
+    const content = document.getElementById('article-content');
+
+    if (!id) {
+        content.innerHTML = '<div class="empty">文章不存在</div>';
+        return;
+    }
+
+    try {
+        let data;
+        try {
+            const r = await fetch(ARTICLES_URL + '?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) throw 0;
+            data = await r.json();
+        } catch {
+            const r2 = await fetch(FALLBACK_URL + '?t=' + Date.now());
+            if (!r2.ok) throw new Error('加载失败');
+            data = await r2.json();
+        }
+
+        const articles = data.articles || data;
+        const article = articles.find(a => a.id === id);
+
+        if (!article) {
+            content.innerHTML = '<div class="empty">文章不存在或已被删除</div>';
+            return;
+        }
+
+        const contentHtml = (article.content || '').split('\n').map(line =>
+            line.trim() ? `<p class="article-paragraph">${escapeHtml(line)}</p>` : '<div>&nbsp;</div>'
+        ).join('');
+
+        content.innerHTML = `
+            <article class="article-full">
+                <h1 class="article-full-title">${escapeHtml(article.title)}</h1>
+                <div class="article-full-meta">
+                    <span>✍️ ${escapeHtml(article.author || '匿名')}</span>
+                    <span class="article-category">${escapeHtml(article.category || '随笔')}</span>
+                    <span>📅 ${formatDate(article.createdAt || Date.now())}</span>
+                </div>
+                <div class="article-full-body">${contentHtml}</div>
+            </article>
+        `;
+    } catch(e) {
+        content.innerHTML = '<div class="empty">文章加载失败: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+
+loadArticle();
+</script>
+</body>
+</html>

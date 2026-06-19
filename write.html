@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提笔写作 · 墨香阁</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header class="site-header">
+        <div class="title-block">
+            <h1 class="site-title">墨香阁</h1>
+            <p class="site-subtitle">笔墨留香 · 文人汇聚</p>
+        </div>
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">文章阁</a>
+            <a href="write.html" class="nav-btn active">提笔写作</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div class="write-section">
+            <h2 class="section-title">✍️ 提笔写作</h2>
+
+            <div class="write-card">
+                <div class="form-group">
+                    <label>文章标题</label>
+                    <input type="text" id="title" placeholder="请输入文章标题..." maxlength="50">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>作者</label>
+                        <input type="text" id="author" placeholder="作者名（如：墨香阁主）" maxlength="30">
+                    </div>
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="category">
+                            <option>散文</option>
+                            <option>诗词</option>
+                            <option>小说</option>
+                            <option>杂文</option>
+                            <option>随笔</option>
+                            <option>评论</option>
+                            <option>游记</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>正文内容</label>
+                    <textarea id="content" rows="12" placeholder="在这里挥毫泼墨，写下你的故事..."></textarea>
+                </div>
+
+                <div class="form-group token-group">
+                    <label>🔐 GitHub Token（发布时需要，用于保存文章到 GitHub 仓库）</label>
+                    <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <p class="helper-text">Token 只保存在你的本机浏览器（localStorage），不会发送到任何第三方。</p>
+                </div>
+
+                <button class="btn-submit" id="submit-btn" onclick="submitArticle()">📝 发布文章</button>
+                <div id="status" class="status-msg"></div>
+            </div>
+
+            <div class="tip-card">
+                <h3>📌 使用提示</h3>
+                <ul>
+                    <li>写完后点击「发布文章」，文章会保存在墨香阁</li>
+                    <li>访问文章阁的所有访客都能看到你的文章</li>
+                    <li>文章保存在 GitHub 仓库，永久留存</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>墨香阁 · 墨香四溢 · 笔下生花</p>
+        <p class="copyright">v1.1 · GitHub Pages</p>
+    </footer>
+</div>
+
+<script>
+const GITHUB_USER = '199932';
+const GITHUB_REPO = 'moxiangge';
+const ARTICLES_FILE_PATH = 'articles.json';
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${ARTICLES_FILE_PATH}`;
+
+// 恢复已保存的 token
+document.getElementById('token').value = localStorage.getItem('gh_token') || '';
+
+// 恢复草稿
+document.getElementById('title').value = localStorage.getItem('draft_title') || '';
+document.getElementById('author').value = localStorage.getItem('draft_author') || '';
+document.getElementById('content').value = localStorage.getItem('draft_content') || '';
+
+// 自动保存草稿
+['title', 'author', 'content'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+        localStorage.setItem('draft_' + id, document.getElementById(id).value);
+    });
+});
+
+function showStatus(msg, isError=false) {
+    const el = document.getElementById('status');
+    el.className = 'status-msg ' + (isError ? 'error' : 'success');
+    el.textContent = msg;
+}
+
+function generateId() {
+    return 'article-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+}
+
+async function submitArticle() {
+    const title = document.getElementById('title').value.trim();
+    const author = document.getElementById('author').value.trim() || '匿名';
+    const category = document.getElementById('category').value;
+    const content = document.getElementById('content').value.trim();
+    const token = document.getElementById('token').value.trim();
+
+    if (!title) return showStatus('请输入文章标题', true);
+    if (!content) return showStatus('请写点内容再发布吧', true);
+    if (!token) return showStatus('请输入 GitHub Token 才能发布', true);
+
+    // 保存 token 到本地
+    localStorage.setItem('gh_token', token);
+
+    showStatus('正在发布文章，请稍候...');
+
+    try {
+        // 1. 获取当前 articles.json（带 SHA 哈希）
+        const getResp = await fetch(GITHUB_API, {
+            headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        let articlesData = { articles: [] };
+        let fileSha = null;
+
+        if (getResp.ok) {
+            const fileInfo = await getResp.json();
+            fileSha = fileInfo.sha;
+            try {
+                const raw = atob(fileInfo.content.replace(/\s/g, ''));
+                articlesData = JSON.parse(raw);
+            } catch(e) {
+                articlesData = { articles: [] };
+            }
+        }
+
+        // 2. 新增文章
+        const newArticle = {
+            id: generateId(),
+            title: title,
+            author: author,
+            category: category,
+            content: content,
+            views: 0,
+            createdAt: Date.now()
+        };
+        articlesData.articles = articlesData.articles || [];
+        articlesData.articles.push(newArticle);
+
+        // 3. 写回 GitHub
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(articlesData, null, 2))));
+        const putBody = {
+            message: '发布文章: ' + title,
+            content: contentBase64,
+            branch: 'main'
+        };
+        if (fileSha) putBody.sha = fileSha;
+
+        const putResp = await fetch(GITHUB_API, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(putBody)
+        });
+
+        if (!putResp.ok) {
+            const err = await putResp.json();
+            throw new Error(err.message || '发布失败');
+        }
+
+        showStatus('✅ 文章已发布！5秒后跳转到文章阁...');
+
+        // 清除草稿
+        localStorage.removeItem('draft_title');
+        localStorage.removeItem('draft_content');
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 3000);
+
+    } catch (e) {
+        showStatus('❌ 发布失败: ' + e.message, true);
+    }
+}
+</script>
+</body>
+</html>
