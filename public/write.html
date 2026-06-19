@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>提笔写作 · 墨香阁</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-brand">MOXIANGGE</div>
+    <h1 class="site-title">提笔写作</h1>
+    <p class="site-subtitle">翰墨丹青 · 笔下生花</p>
+  </header>
+
+  <nav class="site-nav">
+    <a href="/index.html" class="nav-btn">返回书阁</a>
+    <a href="/write.html" class="nav-btn primary">提笔写作</a>
+  </nav>
+
+  <main class="container">
+    <form class="writing-form" id="writeForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="title">文章标题</label>
+          <input type="text" id="title" class="form-input" placeholder="请输入文章标题" maxlength="60" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="author">作者署名</label>
+          <input type="text" id="author" class="form-input" placeholder="笔名或姓名（可选）" maxlength="20" value="匿名">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="category">文章分类</label>
+        <select id="category" class="form-select">
+          <option value="随笔">随笔</option>
+          <option value="散文">散文</option>
+          <option value="小说">小说</option>
+          <option value="诗词">诗词</option>
+          <option value="故事">故事</option>
+          <option value="评论">评论</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="content">文章正文</label>
+        <textarea id="content" class="form-textarea" placeholder="请在此挥毫泼墨，尽情书写心中文字..." rows="12" required></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">发布文章</button>
+    </form>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API_BASE = window.location.protocol + '//' + window.location.host;
+    const toast = document.getElementById('toast');
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = 'toast show ' + (type || '');
+      setTimeout(function() { toast.className = 'toast'; }, 3000);
+    }
+
+    const titleInput = document.getElementById('title');
+    const authorInput = document.getElementById('author');
+    const categoryInput = document.getElementById('category');
+    const contentInput = document.getElementById('content');
+    const submitBtn = document.getElementById('submitBtn');
+
+    try {
+      const draft = JSON.parse(localStorage.getItem('moxiangge-draft') || '{}');
+      if (draft.title) titleInput.value = draft.title;
+      if (draft.author) authorInput.value = draft.author;
+      if (draft.category) categoryInput.value = draft.category;
+      if (draft.content) contentInput.value = draft.content;
+    } catch(e) {}
+
+    function saveDraft() {
+      localStorage.setItem('moxiangge-draft', JSON.stringify({
+        title: titleInput.value, author: authorInput.value,
+        category: categoryInput.value, content: contentInput.value
+      }));
+    }
+    [titleInput, authorInput, categoryInput, contentInput].forEach(function(el) {
+      el.addEventListener('input', saveDraft);
+    });
+
+    document.getElementById('writeForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = titleInput.value.trim();
+      const author = authorInput.value.trim();
+      const category = categoryInput.value;
+      const content = contentInput.value.trim();
+
+      if (!title) { showToast('请填写文章标题', 'error'); return; }
+      if (!content) { showToast('请填写文章内容', 'error'); return; }
+
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = '正在发布...';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(API_BASE + '/api/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json;charset=utf-8', 'Accept': 'application/json' },
+          body: JSON.stringify({ title: title, author: author, category: category, content: content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ 发布成功！', 'success');
+          localStorage.removeItem('moxiangge-draft');
+          setTimeout(function() { location.href = '/read.html?id=' + data.article.id; }, 1500);
+        } else {
+          showToast('发布失败：' + (data.error || '未知错误'), 'error');
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      } catch(err) {
+        showToast('网络错误：' + (err.message || '请确认通过 http://localhost:3000/ 访问'), 'error');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

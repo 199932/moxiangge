@@ -1,0 +1,19 @@
+# ============================================
+# 墨香阁 - Render 一键部署配置
+# https://render.com/docs/deploy-node-express-app
+#
+# 用法：在 render.com 控制台 New → Web Service
+#       选择你的 GitHub 仓库，它会自动读取本文件
+# ============================================
+services:
+  - type: web
+    name: moxiangge
+    runtime: node
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.15.1

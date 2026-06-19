@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>墨香阁 · 品读天下文章</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-brand">MOXIANGGE</div>
+    <h1 class="site-title">墨香阁</h1>
+    <p class="site-subtitle">笔墨留香 · 书写华章</p>
+  </header>
+
+  <nav class="site-nav">
+    <a href="/index.html" class="nav-btn primary">文章列表</a>
+    <a href="/write.html" class="nav-btn">提笔写作</a>
+  </nav>
+
+  <main class="container">
+    <div class="stats-bar">
+      <div>共 <span id="totalCount">0</span> 篇文章</div>
+    </div>
+    <div id="articleList" class="article-list">
+      <div class="loading">正在载入...</div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API_BASE = window.location.protocol + '//' + window.location.host;
+    const toast = document.getElementById('toast');
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = 'toast show ' + (type || '');
+      setTimeout(function() { toast.className = 'toast'; }, 2500);
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    function formatDate(t) {
+      const d = new Date(t);
+      const pad = n => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function render(articles) {
+      const list = document.getElementById('articleList');
+      document.getElementById('totalCount').textContent = articles.length;
+      if (articles.length === 0) {
+        list.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state-icon">📜</div>' +
+            '<div class="empty-state-text">暂无文章 · 何不开笔第一篇</div>' +
+            '<a href="/write.html" class="nav-btn primary">提笔写作</a>' +
+          '</div>';
+        return;
+      }
+      list.innerHTML = articles.map(function(a) {
+        const preview = (a.preview || '').substring(0, 100) + ((a.content || '').length > 100 ? '...' : '');
+        return '<article class="article-card" onclick="location.href=\'/read.html?id=' + a.id + '\'">' +
+          '<div class="article-card-header">' +
+            '<h2 class="article-card-title">' + escapeHtml(a.title) + '</h2>' +
+            '<div class="article-card-meta"><span class="author">' + escapeHtml(a.author || '匿名') + '</span><span>' + formatDate(a.createdAt) + '</span></div>' +
+          '</div>' +
+          '<p class="article-card-preview">' + escapeHtml(preview).replace(/\n/g, ' ') + '</p>' +
+          '<div class="article-card-footer">' +
+            '<span class="category-tag">' + escapeHtml(a.category || '随笔') + '</span>' +
+            '<span>浏览 ' + (a.views || 0) + '</span>' +
+            '<a href="/read.html?id=' + a.id + '" class="read-link" onclick="event.stopPropagation()">阅读全文 →</a>' +
+          '</div>' +
+        '</article>';
+      }).join('');
+    }
+
+    fetch(API_BASE + '/api/articles')
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data) { if (data.success) render(data.articles); else throw new Error(data.error || '加载失败'); })
+      .catch(function(err) {
+        document.getElementById('articleList').innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state-icon">⚠️</div>' +
+            '<div class="empty-state-text">加载失败 · 请确认通过 http://localhost:3000/ 访问，不要直接双击打开文件</div>' +
+            '<div style="color:#8b2500;margin-top:12px;font-size:13px;">错误：' + escapeHtml(err.message) + '</div>' +
+          '</div>';
+      });
+  </script>
+</body>
+</html>

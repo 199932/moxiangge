@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>墨香阁 · 手机扫码下载</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --paper: #faf7f2;
+    --accent: #6366f1;
+    --accent-2: #ec4899;
+    --muted: #8b8ba7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', 'Noto Serif SC', sans-serif;
+    min-height: 100vh;
+    background:
+      radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(236, 72, 153, 0.12) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(250, 247, 242, 1) 0px, #f5f0e8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: var(--ink);
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 32px;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 8px 32px rgba(99, 102, 241, 0.08),
+      0 24px 80px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+
+  .logo {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.4em;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 32px;
+    text-align: center;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 36px;
+    letter-spacing: 0.02em;
+  }
+
+  .qr-wrapper {
+    background: linear-gradient(135deg, #f8f7ff 0%, #fff7fb 100%);
+    border-radius: 24px;
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 28px;
+    position: relative;
+    border: 1px solid rgba(99, 102, 241, 0.1);
+  }
+
+  #qrcode {
+    display: flex;
+    justify-content: center;
+  }
+
+  #qrcode img, #qrcode canvas {
+    border-radius: 12px;
+  }
+
+  .qr-tag {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: white;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  }
+
+  .info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .info-item {
+    background: #fafafd;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .info-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .info-value {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    word-break: break-all;
+  }
+
+  .download-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    color: white;
+    text-decoration: none;
+    padding: 18px;
+    border-radius: 16px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+    margin-bottom: 16px;
+  }
+
+  .download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45);
+  }
+
+  .copy-btn {
+    display: block;
+    width: 100%;
+    background: white;
+    color: var(--ink);
+    border: 1.5px solid #e5e5ea;
+    padding: 14px;
+    border-radius: 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .copy-btn.copied {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #10b981;
+  }
+
+  .steps {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px dashed #e5e5ea;
+  }
+
+  .steps h3 {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .step-list {
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .step-list li {
+    counter-increment: step;
+    padding: 10px 0 10px 36px;
+    position: relative;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .step-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (max-width: 520px) {
+    .card {
+      padding: 32px 24px;
+      border-radius: 24px;
+    }
+    h1 { font-size: 24px; }
+    .info { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">MOXIANGGE · 墨香阁</div>
+    <h1>扫码下载应用</h1>
+    <p class="subtitle">Android APK · 版本 1.0</p>
+
+    <div class="qr-wrapper">
+      <span class="qr-tag">SCAN ME</span>
+      <div id="qrcode"></div>
+    </div>
+
+    <div class="info">
+      <div class="info-item">
+        <div class="info-label">文件大小</div>
+        <div class="info-value" id="size">—</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">下载链接</div>
+        <div class="info-value" id="url-text">—</div>
+      </div>
+    </div>
+
+    <a class="download-btn" id="download-link" href="#">下载 APK</a>
+    <button class="copy-btn" id="copy-btn">复制下载链接</button>
+
+    <div class="steps">
+      <h3>手机安装步骤</h3>
+      <ol class="step-list">
+        <li>用手机相机或二维码工具扫描上方二维码</li>
+        <li>在浏览器中打开并下载 APK 文件</li>
+        <li>下载完成后点击文件进行安装</li>
+        <li>如提示"未知来源"，请在设置中允许安装</li>
+      </ol>
+    </div>
+  </div>
+
+<script>
+  const IP = '10.72.216.205';
+  const PORT = '8000';
+  const fileName = 'moxiangge.apk';
+  const downloadURL = `http://${IP}:${PORT}/${fileName}`;
+
+  // 生成二维码
+  new QRCode(document.getElementById('qrcode'), {
+    text: downloadURL,
+    width: 240,
+    height: 240,
+    colorDark: '#1a1a2e',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // 获取文件大小
+  fetch(downloadURL, { method: 'HEAD' })
+    .then(r => {
+      const size = r.headers.get('Content-Length');
+      if (size) {
+        const mb = (parseInt(size) / (1024 * 1024)).toFixed(2);
+        document.getElementById('size').textContent = `${mb} MB`;
+      }
+    })
+    .catch(() => {
+      document.getElementById('size').textContent = '约 3.4 MB';
+    });
+
+  // 设置链接
+  document.getElementById('download-link').href = downloadURL;
+  document.getElementById('url-text').textContent = `${IP}:${PORT}`;
+
+  // 复制按钮
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(downloadURL);
+      copyBtn.textContent = '✓ 已复制到剪贴板';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = '复制下载链接';
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    } catch (e) {
+      copyBtn.textContent = '复制失败，请手动复制';
+    }
+  });
+</script>
+</body>
+</html>

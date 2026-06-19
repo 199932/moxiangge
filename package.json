@@ -1,0 +1,15 @@
+{
+  "name": "moxiangge",
+  "version": "1.0.0",
+  "description": "墨香阁 - 在线文学创作与阅读平台",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
