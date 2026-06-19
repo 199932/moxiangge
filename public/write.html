@@ -1,129 +1,206 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>提笔写作 · 墨香阁</title>
-  <link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提笔写作 · 墨香阁</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="site-brand">MOXIANGGE</div>
-    <h1 class="site-title">提笔写作</h1>
-    <p class="site-subtitle">翰墨丹青 · 笔下生花</p>
-  </header>
-
-  <nav class="site-nav">
-    <a href="/index.html" class="nav-btn">返回书阁</a>
-    <a href="/write.html" class="nav-btn primary">提笔写作</a>
-  </nav>
-
-  <main class="container">
-    <form class="writing-form" id="writeForm">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="title">文章标题</label>
-          <input type="text" id="title" class="form-input" placeholder="请输入文章标题" maxlength="60" required>
+<div class="container">
+    <header class="site-header">
+        <div class="title-block">
+            <h1 class="site-title">墨香阁</h1>
+            <p class="site-subtitle">笔墨留香 · 文人汇聚</p>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="author">作者署名</label>
-          <input type="text" id="author" class="form-input" placeholder="笔名或姓名（可选）" maxlength="20" value="匿名">
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">文章阁</a>
+            <a href="write.html" class="nav-btn active">提笔写作</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div class="write-section">
+            <h2 class="section-title">✍️ 提笔写作</h2>
+
+            <div class="write-card">
+                <div class="form-group">
+                    <label>文章标题</label>
+                    <input type="text" id="title" placeholder="请输入文章标题..." maxlength="50">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>作者</label>
+                        <input type="text" id="author" placeholder="作者名（如：墨香阁主）" maxlength="30">
+                    </div>
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="category">
+                            <option>散文</option>
+                            <option>诗词</option>
+                            <option>小说</option>
+                            <option>杂文</option>
+                            <option>随笔</option>
+                            <option>评论</option>
+                            <option>游记</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>正文内容</label>
+                    <textarea id="content" rows="12" placeholder="在这里挥毫泼墨，写下你的故事..."></textarea>
+                </div>
+
+                <div class="form-group token-group">
+                    <label>🔐 GitHub Token（发布时需要，用于保存文章到 GitHub 仓库）</label>
+                    <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <p class="helper-text">Token 只保存在你的本机浏览器（localStorage），不会发送到任何第三方。</p>
+                </div>
+
+                <button class="btn-submit" id="submit-btn" onclick="submitArticle()">📝 发布文章</button>
+                <div id="status" class="status-msg"></div>
+            </div>
+
+            <div class="tip-card">
+                <h3>📌 使用提示</h3>
+                <ul>
+                    <li>写完后点击「发布文章」，文章会保存在墨香阁</li>
+                    <li>访问文章阁的所有访客都能看到你的文章</li>
+                    <li>文章保存在 GitHub 仓库，永久留存</li>
+                </ul>
+            </div>
         </div>
-      </div>
+    </main>
 
-      <div class="form-group">
-        <label class="form-label" for="category">文章分类</label>
-        <select id="category" class="form-select">
-          <option value="随笔">随笔</option>
-          <option value="散文">散文</option>
-          <option value="小说">小说</option>
-          <option value="诗词">诗词</option>
-          <option value="故事">故事</option>
-          <option value="评论">评论</option>
-          <option value="其他">其他</option>
-        </select>
-      </div>
+    <footer class="site-footer">
+        <p>墨香阁 · 墨香四溢 · 笔下生花</p>
+        <p class="copyright">v1.1 · GitHub Pages</p>
+    </footer>
+</div>
 
-      <div class="form-group">
-        <label class="form-label" for="content">文章正文</label>
-        <textarea id="content" class="form-textarea" placeholder="请在此挥毫泼墨，尽情书写心中文字..." rows="12" required></textarea>
-      </div>
+<script>
+const GITHUB_USER = '199932';
+const GITHUB_REPO = 'moxiangge';
+const ARTICLES_FILE_PATH = 'articles.json';
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${ARTICLES_FILE_PATH}`;
 
-      <button type="submit" class="submit-btn" id="submitBtn">发布文章</button>
-    </form>
-  </main>
+// 恢复已保存的 token
+document.getElementById('token').value = localStorage.getItem('gh_token') || '';
 
-  <div id="toast" class="toast"></div>
+// 恢复草稿
+document.getElementById('title').value = localStorage.getItem('draft_title') || '';
+document.getElementById('author').value = localStorage.getItem('draft_author') || '';
+document.getElementById('content').value = localStorage.getItem('draft_content') || '';
 
-  <script>
-    const API_BASE = window.location.protocol + '//' + window.location.host;
-    const toast = document.getElementById('toast');
-    function showToast(msg, type) {
-      toast.textContent = msg;
-      toast.className = 'toast show ' + (type || '');
-      setTimeout(function() { toast.className = 'toast'; }, 3000);
-    }
+// 自动保存草稿
+['title', 'author', 'content'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+        localStorage.setItem('draft_' + id, document.getElementById(id).value);
+    });
+});
 
-    const titleInput = document.getElementById('title');
-    const authorInput = document.getElementById('author');
-    const categoryInput = document.getElementById('category');
-    const contentInput = document.getElementById('content');
-    const submitBtn = document.getElementById('submitBtn');
+function showStatus(msg, isError=false) {
+    const el = document.getElementById('status');
+    el.className = 'status-msg ' + (isError ? 'error' : 'success');
+    el.textContent = msg;
+}
+
+function generateId() {
+    return 'article-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+}
+
+async function submitArticle() {
+    const title = document.getElementById('title').value.trim();
+    const author = document.getElementById('author').value.trim() || '匿名';
+    const category = document.getElementById('category').value;
+    const content = document.getElementById('content').value.trim();
+    const token = document.getElementById('token').value.trim();
+
+    if (!title) return showStatus('请输入文章标题', true);
+    if (!content) return showStatus('请写点内容再发布吧', true);
+    if (!token) return showStatus('请输入 GitHub Token 才能发布', true);
+
+    // 保存 token 到本地
+    localStorage.setItem('gh_token', token);
+
+    showStatus('正在发布文章，请稍候...');
 
     try {
-      const draft = JSON.parse(localStorage.getItem('moxiangge-draft') || '{}');
-      if (draft.title) titleInput.value = draft.title;
-      if (draft.author) authorInput.value = draft.author;
-      if (draft.category) categoryInput.value = draft.category;
-      if (draft.content) contentInput.value = draft.content;
-    } catch(e) {}
-
-    function saveDraft() {
-      localStorage.setItem('moxiangge-draft', JSON.stringify({
-        title: titleInput.value, author: authorInput.value,
-        category: categoryInput.value, content: contentInput.value
-      }));
-    }
-    [titleInput, authorInput, categoryInput, contentInput].forEach(function(el) {
-      el.addEventListener('input', saveDraft);
-    });
-
-    document.getElementById('writeForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const title = titleInput.value.trim();
-      const author = authorInput.value.trim();
-      const category = categoryInput.value;
-      const content = contentInput.value.trim();
-
-      if (!title) { showToast('请填写文章标题', 'error'); return; }
-      if (!content) { showToast('请填写文章内容', 'error'); return; }
-
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = '正在发布...';
-      submitBtn.disabled = true;
-
-      try {
-        const res = await fetch(API_BASE + '/api/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json;charset=utf-8', 'Accept': 'application/json' },
-          body: JSON.stringify({ title: title, author: author, category: category, content: content })
+        // 1. 获取当前 articles.json（带 SHA 哈希）
+        const getResp = await fetch(GITHUB_API, {
+            headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+            }
         });
-        const data = await res.json();
-        if (data.success) {
-          showToast('✓ 发布成功！', 'success');
-          localStorage.removeItem('moxiangge-draft');
-          setTimeout(function() { location.href = '/read.html?id=' + data.article.id; }, 1500);
-        } else {
-          showToast('发布失败：' + (data.error || '未知错误'), 'error');
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
+
+        let articlesData = { articles: [] };
+        let fileSha = null;
+
+        if (getResp.ok) {
+            const fileInfo = await getResp.json();
+            fileSha = fileInfo.sha;
+            try {
+                const raw = atob(fileInfo.content.replace(/\s/g, ''));
+                articlesData = JSON.parse(raw);
+            } catch(e) {
+                articlesData = { articles: [] };
+            }
         }
-      } catch(err) {
-        showToast('网络错误：' + (err.message || '请确认通过 http://localhost:3000/ 访问'), 'error');
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      }
-    });
-  </script>
+
+        // 2. 新增文章
+        const newArticle = {
+            id: generateId(),
+            title: title,
+            author: author,
+            category: category,
+            content: content,
+            views: 0,
+            createdAt: Date.now()
+        };
+        articlesData.articles = articlesData.articles || [];
+        articlesData.articles.push(newArticle);
+
+        // 3. 写回 GitHub
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(articlesData, null, 2))));
+        const putBody = {
+            message: '发布文章: ' + title,
+            content: contentBase64,
+            branch: 'main'
+        };
+        if (fileSha) putBody.sha = fileSha;
+
+        const putResp = await fetch(GITHUB_API, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(putBody)
+        });
+
+        if (!putResp.ok) {
+            const err = await putResp.json();
+            throw new Error(err.message || '发布失败');
+        }
+
+        showStatus('✅ 文章已发布！5秒后跳转到文章阁...');
+
+        // 清除草稿
+        localStorage.removeItem('draft_title');
+        localStorage.removeItem('draft_content');
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 3000);
+
+    } catch (e) {
+        showStatus('❌ 发布失败: ' + e.message, true);
+    }
+}
+</script>
 </body>
 </html>

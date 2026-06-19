@@ -1,0 +1,31 @@
+{
+  "articles": [
+    {
+      "id": "article-welcome-001",
+      "title": "墨香阁序",
+      "author": "阁主",
+      "category": "散文",
+      "content": "欢迎来到墨香阁。\n\n这里是一方笔墨留香之地，文人墨客汇聚之所。\n\n在这里，你可以挥毫泼墨，写下心中的故事；也可以漫步书海，品读他人的笔墨精华。\n\n愿你在此，墨香四溢，笔下生花。",
+      "views": 0,
+      "createdAt": 1750000000000
+    },
+    {
+      "id": "article-demo-002",
+      "title": "春夜洛城闻笛",
+      "author": "李白",
+      "category": "诗词",
+      "content": "谁家玉笛暗飞声，散入春风满洛城。\n\n此夜曲中闻折柳，何人不起故园情。",
+      "views": 0,
+      "createdAt": 1740000000000
+    },
+    {
+      "id": "article-demo-003",
+      "title": "静夜思",
+      "author": "李白",
+      "category": "诗词",
+      "content": "床前明月光，疑是地上霜。\n\n举头望明月，低头思故乡。",
+      "views": 0,
+      "createdAt": 1730000000000
+    }
+  ]
+}

@@ -1,86 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>阅读 · 墨香阁</title>
-  <link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章阅读 · 墨香阁</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="site-brand">MOXIANGGE</div>
-    <h1 class="site-title">墨香阁</h1>
-    <p class="site-subtitle">品读好文 · 墨香四溢</p>
-  </header>
+<div class="container">
+    <header class="site-header">
+        <div class="title-block">
+            <h1 class="site-title">墨香阁</h1>
+            <p class="site-subtitle">笔墨留香 · 文人汇聚</p>
+        </div>
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">文章阁</a>
+            <a href="write.html" class="nav-btn">提笔写作</a>
+        </nav>
+    </header>
 
-  <nav class="site-nav">
-    <a href="/index.html" class="nav-btn">返回书阁</a>
-    <a href="/write.html" class="nav-btn primary">提笔写作</a>
-  </nav>
+    <main class="content">
+        <div id="article-view">
+            <a href="index.html" class="back-link">← 返回文章阁</a>
+            <div id="article-content">
+                <div class="loading">文章加载中...</div>
+            </div>
+        </div>
+    </main>
 
-  <main class="container">
-    <a href="/index.html" class="back-link">← 回到书阁</a>
-    <div id="articleBody">
-      <div class="loading">正在翻页...</div>
-    </div>
-  </main>
+    <footer class="site-footer">
+        <p>墨香阁 · 墨香四溢 · 笔下生花</p>
+        <p class="copyright">v1.1 · GitHub Pages</p>
+    </footer>
+</div>
 
-  <div id="toast" class="toast"></div>
+<script>
+const GITHUB_USER = '199932';
+const GITHUB_REPO = 'moxiangge';
+const ARTICLES_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/articles.json`;
+const FALLBACK_URL = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/articles.json`;
 
-  <script>
-    const API_BASE = window.location.protocol + '//' + window.location.host;
-    const toast = document.getElementById('toast');
-    function showToast(msg, type) {
-      toast.textContent = msg;
-      toast.className = 'toast show ' + (type || '');
-      setTimeout(function() { toast.className = 'toast'; }, 2500);
-    }
-    function escapeHtml(s) {
-      if (!s) return '';
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-    }
-    function formatDate(t) {
-      const d = new Date(t);
-      return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
-    }
-    function getParam(name) {
-      const m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
-      return m ? decodeURIComponent(m[1]) : '';
-    }
-    function render(article) {
-      const paragraphs = (article.content || '').split(/\n+/);
-      const contentHtml = paragraphs.filter(p => p.trim()).map(function(p) {
-        return '<p>' + escapeHtml(p) + '</p>';
-      }).join('');
-      document.getElementById('articleBody').innerHTML =
-        '<article class="reader-container">' +
-          '<h1 class="reader-title">' + escapeHtml(article.title) + '</h1>' +
-          '<div class="reader-meta">' +
-            '<span class="author-tag">' + escapeHtml(article.author || '匿名') + '</span>' +
-            '<span> · </span>' +
-            '<span>' + escapeHtml(article.category || '随笔') + '</span>' +
-            '<span> · </span>' +
-            '<span>' + formatDate(article.createdAt) + '</span>' +
-            '<span> · </span>' +
-            '<span>浏览 ' + (article.views || 0) + '</span>' +
-          '</div>' +
-          '<div class="reader-content">' + contentHtml + '</div>' +
-        '</article>';
-    }
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+}
 
+function formatDate(ts) {
+    const d = new Date(ts);
+    return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 '
+        + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function getParam(name) {
+    const m = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return m ? decodeURIComponent(m[1]) : '';
+}
+
+async function loadArticle() {
     const id = getParam('id');
+    const content = document.getElementById('article-content');
+
     if (!id) {
-      document.getElementById('articleBody').innerHTML =
-        '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">未指定文章</div><a href="/index.html" class="nav-btn">返回书阁</a></div>';
-    } else {
-      fetch(API_BASE + '/api/articles/' + encodeURIComponent(id))
-        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(data) { if (data.success) { document.title = data.article.title + ' · 墨香阁'; render(data.article); } else throw new Error(data.error || '文章不存在'); })
-        .catch(function(err) {
-          document.getElementById('articleBody').innerHTML =
-            '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">加载失败</div><div style="color:#8b2500;margin-top:12px;font-size:13px;">错误：' + escapeHtml(err.message) + '</div><a href="/index.html" class="nav-btn" style="margin-top:20px;">返回书阁</a></div>';
-        });
+        content.innerHTML = '<div class="empty">文章不存在</div>';
+        return;
     }
-  </script>
+
+    try {
+        let data;
+        try {
+            const r = await fetch(ARTICLES_URL + '?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) throw 0;
+            data = await r.json();
+        } catch {
+            const r2 = await fetch(FALLBACK_URL + '?t=' + Date.now());
+            if (!r2.ok) throw new Error('加载失败');
+            data = await r2.json();
+        }
+
+        const articles = data.articles || data;
+        const article = articles.find(a => a.id === id);
+
+        if (!article) {
+            content.innerHTML = '<div class="empty">文章不存在或已被删除</div>';
+            return;
+        }
+
+        const contentHtml = (article.content || '').split('\n').map(line =>
+            line.trim() ? `<p class="article-paragraph">${escapeHtml(line)}</p>` : '<div>&nbsp;</div>'
+        ).join('');
+
+        content.innerHTML = `
+            <article class="article-full">
+                <h1 class="article-full-title">${escapeHtml(article.title)}</h1>
+                <div class="article-full-meta">
+                    <span>✍️ ${escapeHtml(article.author || '匿名')}</span>
+                    <span class="article-category">${escapeHtml(article.category || '随笔')}</span>
+                    <span>📅 ${formatDate(article.createdAt || Date.now())}</span>
+                </div>
+                <div class="article-full-body">${contentHtml}</div>
+            </article>
+        `;
+    } catch(e) {
+        content.innerHTML = '<div class="empty">文章加载失败: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+
+loadArticle();
+</script>
 </body>
 </html>
